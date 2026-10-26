@@ -1,0 +1,10 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtemp,writeFile,readFile,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+import {createPatch} from '../lib/patch.mjs';
+const exec=promisify(execFile);
+test('exported patches apply correctly with or without final newlines',async()=>{const directory=await mkdtemp(join(tmpdir(),'sentinel-patch-'));try{for(const [before,after] of [['old\n','new\n'],['old','new'],['old\n','new'],['old','new\n'],['','new\n'],['old\n','']]){await writeFile(join(directory,'sample.txt'),before);await writeFile(join(directory,'change.patch'),createPatch('sample.txt',before,after));await exec('git',['-c','core.autocrlf=false','apply','--no-index','change.patch'],{cwd:directory});assert.equal(await readFile(join(directory,'sample.txt'),'utf8'),after);}}finally{await rm(directory,{recursive:true,force:true});}});
