@@ -80,3 +80,7 @@ Los cambios manuales se describen como **tests no ejecutados**. La suite de la d
 `npm test` verifica la reproducción del bug, publicación mediante API simulada, bloqueo de commits desactualizados, aprobación obligatoria, rutas prohibidas y conservación de la rama ante fallos parciales. OAuth real y publicación real deben probarse con credenciales y un repositorio de prueba. Las comprobaciones con mocks no prueban permisos o callbacks reales.
 
 Antes de ofrecerlo como SaaS: GitHub App, base de datos de cuentas/instalaciones, historial de auditoría persistente, revocación de sesiones, límites de tasa y uso por usuario, aislamiento de ejecuciones y proveedor de pagos con webhooks verificados. Las rutas de demo permanecen públicas y solo ejecutan una fixture fija; deben limitarse o protegerse antes de desplegar públicamente.
+
+## Despliegue (SiteGround)
+
+App en `~/devsentinel-ai` (Next.js en 127.0.0.1:8810) detrás de un proxy PHP (`deploy/proxy-index.php` + `deploy/htaccess`) en `devsentinel-ai.virtualelearning.co`. El servidor no puede ejecutar `next build` (límite de recursos): compilar en local y subir `.next`. Control: `bash deploy/devsentinel.sh {start|stop|restart|status|keepalive}`. Variables en `.env.local` (OAuth sin configurar = solo demo).

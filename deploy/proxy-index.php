@@ -2,6 +2,7 @@
 // Reverse proxy hacia DevSentinel AI (Next.js, puerto local 8810).
 // Reenvía método, cuerpo JSON, Cookie / Set-Cookie y Location (OAuth y login).
 $BACKEND = "http://127.0.0.1:8810";
+if (strpos($_SERVER["REQUEST_URI"], "/_next/static/") !== 0) header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 $uri = $_SERVER['REQUEST_URI'];
 $method = $_SERVER['REQUEST_METHOD'];
 $ch = curl_init($BACKEND . $uri);
