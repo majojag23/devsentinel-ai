@@ -131,3 +131,14 @@ test('removing a secret from the code still reminds you to revoke it; unrelated 
  const stillThere=await verifyProposal({path:'src/a.js',original:before,content:before+'const GOOGLE = "AIza'+'x'.repeat(35)+'";\n',osv});
  assert.equal(stillThere.findings.length,1);assert.deepEqual(stillThere.reminders,[]);
 });
+test('clearing a container with innerHTML = "" is not reported, but real HTML assignments are',()=>{
+ assert.equal(scanPatch('a.js',patch("el.stars.innerHTML = '';",'el.a.innerHTML = "";','el.b.innerHTML = ``;',"el.c.innerHTML='';")).length,0);
+ assert.deepEqual(ids(scanPatch('a.js',patch("el.a.innerHTML = ''; el.b.innerHTML = html;"))),['xss']);
+ assert.deepEqual(ids(scanPatch('a.js',patch("el.a.innerHTML = '' + html;","el.b.innerHTML = '<b>x</b>';",'el.c.innerHTML += texto;'))),['xss','xss','xss']);
+});
+test('secrets named in Spanish are found too, without flagging labels or placeholders',()=>{
+ const f=scanPatch('app.js',patch('const claveProfesor = "profesor-demo-2026";','const contraseña = "otra-clave-falsa";','const llaveApi = "abcdefgh12345678";','secreto: "valor-secreto-123"'));
+ assert.deepEqual(ids(f),['hardcoded-secret','hardcoded-secret','hardcoded-secret','hardcoded-secret']);
+ assert.ok(!JSON.stringify(f).includes('profesor-demo-2026'));
+ assert.equal(scanPatch('app.js',patch('const claveCorrecta = clave;','const etiquetaClave = "Escribe tu clave";','const clave = process.env.CLAVE;','const contraseña = "<tu-contraseña>";','const secreto = "tu_secreto_aqui";')).length,0);
+});

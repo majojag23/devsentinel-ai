@@ -2,6 +2,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {X} from 'lucide-react';
 import {steps,tickleLine,TICKLE_MS} from '../../lib/axel.mjs';
+import {useGaze} from './use-gaze';
 type Mood='neutral'|'happy'|'thinking'|'surprised'|'worried'|'determined';
 export type AxelGuide={mood:Mood;title:string;text:string;step:number;done:boolean;detail?:string};
 const frames:string[]=['neutral','happy','thinking','surprised','worried','determined','blink-half','blink-closed','laughing'];
@@ -13,6 +14,7 @@ export function Axel({guide}:{guide:AxelGuide}){
  const [minimized,setMinimized]=useState(false),[override,setOverride]=useState('');
  const [tickle,setTickle]=useState<{title:string;text:string}|null>(null),[laugh,setLaugh]=useState('laughing');
  const timer=useRef<ReturnType<typeof setTimeout>>(undefined),loop=useRef<ReturnType<typeof setInterval>>(undefined),count=useRef(0);
+ const canvasRef=useRef<HTMLCanvasElement>(null),areaRef=useRef<HTMLButtonElement>(null),stackRef=useRef<HTMLSpanElement>(null);
  const tickled=tickle!==null;
  useEffect(()=>{try{setMinimized(localStorage.getItem(KEY)==='1');}catch{}},[]);
  function stopTickle(){clearTimeout(timer.current);clearInterval(loop.current);setTickle(null);}
@@ -49,7 +51,9 @@ export function Axel({guide}:{guide:AxelGuide}){
  },[guide.mood,minimized,tickled]);
  function toggle(next:boolean){setMinimized(next);try{localStorage.setItem(KEY,next?'1':'0');}catch{}}
  const face=tickled?laugh:guide.mood==='neutral'&&override?override:guide.mood;
- const avatar=<span className="axel-body"><span className={'axel-stack'+(override||tickled?' fast':'')}>{frames.map(f=><img key={f} className={'axel-face'+(f===face?' on':'')} src={`/axel/${f}.webp`} width={384} height={384} alt="" aria-hidden="true" draggable={false}/>)}</span></span>;
+ // His eyes follow the pointer while they are open and he is not laughing.
+ useGaze({face,enabled:!tickled&&!minimized,canvas:canvasRef,area:areaRef,stack:stackRef,remountKey:guide.mood+guide.title+minimized});
+ const avatar=<span className="axel-body"><span className={'axel-stack'+(override||tickled?' fast':'')} ref={stackRef}>{frames.map(f=><img key={f} data-face={f} className={'axel-face'+(f===face?' on':'')} src={`/axel/${f}.webp`} width={384} height={384} alt="" aria-hidden="true" draggable={false}/>)}<canvas ref={canvasRef} className="axel-gaze" aria-hidden="true"/></span></span>;
  if(minimized)return <button type="button" className="axel axel-min" onClick={()=>toggle(false)} aria-label="Abrir la guía de Axel" title="Axel te guía">{avatar}<span className="axel-dot"/></button>;
  return <aside className={'axel axel-'+guide.mood+(tickled?' tickled':'')} aria-label="Axel, tu guía">
   <div className="axel-bubble">
@@ -57,6 +61,6 @@ export function Axel({guide}:{guide:AxelGuide}){
    {guide.step>0&&!tickled&&<ol className="axel-steps" aria-label="Pasos">{steps.map((s:string,i:number)=><li key={s} className={(guide.done||i+1<guide.step?'is-done':i+1===guide.step?'is-now':'')} aria-current={i+1===guide.step&&!guide.done?'step':undefined}><span>{guide.done||i+1<guide.step?'✓':i+1}</span>{s}</li>)}</ol>}
    <div role="status" aria-live="polite">{tickle?<><b>{tickle.title}</b><p>{tickle.text}</p><small className="axel-tickle-foot">● Riendo contigo</small></>:<><b>{guide.title}</b><p>{guide.text}</p>{guide.detail&&<small>Detalle: {guide.detail}</small>}</>}</div>
   </div>
-  <button type="button" className="axel-avatar axel-touch" key={guide.mood+guide.title} onClick={tickleNow} aria-label={tickled?'Axel se está riendo':'Axel, tu guía. Tócalo para hacerle cosquillas'} title="¡Tócame!">{avatar}{tickled&&<span className="axel-particles" aria-hidden="true"><span>¡ja!</span><span>✦</span><span>¡ja, ja!</span></span>}</button>
+  <button type="button" ref={areaRef} className="axel-avatar axel-touch" key={guide.mood+guide.title} onClick={tickleNow} aria-label={tickled?'Axel se está riendo':'Axel, tu guía. Tócalo para hacerle cosquillas'} title="¡Tócame!">{avatar}{tickled&&<span className="axel-particles" aria-hidden="true"><span>¡ja!</span><span>✦</span><span>¡ja, ja!</span></span>}</button>
  </aside>;
 }
