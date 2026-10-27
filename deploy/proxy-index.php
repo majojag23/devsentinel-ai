@@ -19,9 +19,10 @@ $r = curl_exec($ch);
 if ($r === false) { http_response_code(502); header('Content-Type: application/json'); echo json_encode(['error' => 'Backend no disponible']); exit; }
 $hs = curl_getinfo($ch, CURLINFO_HEADER_SIZE); $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $head = substr($r, 0, $hs); $body = substr($r, $hs); curl_close($ch);
-http_response_code($code);
 foreach (explode("\r\n", $head) as $l) {
   if (preg_match('/^(Content-Type|Content-Disposition|Location|Cache-Control|Retry-After):/i', $l)) header($l);
   elseif (stripos($l, 'Set-Cookie:') === 0) header($l, false);
 }
+// Después de los encabezados: PHP fuerza 302 al enviar Location si el estado se fijó antes.
+http_response_code($code);
 echo $body;
