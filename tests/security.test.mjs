@@ -36,9 +36,9 @@ test('added dependencies are read from a package.json patch',()=>{
  const deps=addedDependencies('@@ -3,2 +3,6 @@\n   "dependencies": {\n+    "lodash": "^4.17.15",\n+    "@scope/pkg": "~2.0.1",\n+    "version": "1.2.3",\n+    "dev": "node --test",\n+    "local": "file:../x"');
  assert.deepEqual(deps,[{name:'lodash',version:'4.17.15',line:4},{name:'@scope/pkg',version:'2.0.1',line:5}]);
 });
-function ghMock({priv=false,files,push=true,sameRepo=true}){return async path=>{
+function ghMock({priv=false,files,push=true,sameRepo=true,state='open'}){return async path=>{
  if(path.includes('/files'))return files;
- if(path.includes('/pulls/'))return {title:'Add stuff',state:'open',head:{ref:'feature/x',repo:{full_name:sameRepo?'owner/repo':'fork/repo'}}};
+ if(path.includes('/pulls/'))return {title:'Add stuff',state,head:{ref:'feature/x',repo:{full_name:sameRepo?'owner/repo':'fork/repo'}}};
  return {private:priv,permissions:{push}};
 };}
 test('a PR scan combines rules and OSV, sorts by severity and reports what it skipped',async()=>{
@@ -108,4 +108,26 @@ test('dependency findings suggest the latest version and say whether it is clean
  assert.match(dirty.findings[0].fix,/8\.0\.0\) todavía tiene 2 avisos/);
  const none=await scanPullRequest({github:ghMock({files}),osv,latest:async()=>null,repository:'owner/repo',pr:1});
  assert.match(none.findings[0].fix,/versión corregida/);
+});
+test('the reason a fix button is withheld is reported exactly: closed, fork or no write access',async()=>{
+ const files=[{filename:'a.js',status:'modified',patch:patch('eval(x);')}];
+ const run=opts=>scanPullRequest({github:ghMock({files,...opts}),osv:async()=>[],repository:'owner/repo',pr:1});
+ const ok=await run({});assert.equal(ok.canFix,true);assert.equal(ok.fixBlock,'');
+ const closed=await run({state:'closed'});assert.equal(closed.canFix,false);assert.equal(closed.fixBlock,'closed');
+ assert.equal((await run({sameRepo:false})).fixBlock,'fork');
+ assert.equal((await run({push:false})).fixBlock,'no-write');
+ assert.equal((await run({state:'closed',sameRepo:false})).fixBlock,'closed');
+});
+test('removing a secret from the code still reminds you to revoke it; unrelated edits do not',async()=>{
+ const osv=async()=>[];
+ const before='const a = 1;\nconst GITHUB_TOKEN = "ghp_'+'A'.repeat(36)+'";\nexport {a};\n';
+ const fixed=before.replace(/const GITHUB_TOKEN.*\n/,'const GITHUB_TOKEN = process.env.GITHUB_TOKEN;\n');
+ const v=await verifyProposal({path:'src/a.js',original:before,content:fixed,osv});
+ assert.equal(v.findings.length,0);assert.equal(v.reminders.length,1);assert.match(v.reminders[0],/historial de Git.*Revócala/);
+ const plain=await verifyProposal({path:'src/a.js',original:'const a = 1;\n',content:'const a = 2;\n',osv});
+ assert.deepEqual(plain.reminders,[]);
+ const kept=await verifyProposal({path:'src/a.js',original:before,content:before.replace('const a = 1','const a = 2'),osv});
+ assert.deepEqual(kept.reminders,[]);
+ const stillThere=await verifyProposal({path:'src/a.js',original:before,content:before+'const GOOGLE = "AIza'+'x'.repeat(35)+'";\n',osv});
+ assert.equal(stillThere.findings.length,1);assert.deepEqual(stillThere.reminders,[]);
 });

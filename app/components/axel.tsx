@@ -41,7 +41,7 @@ export function Axel({guide}:{guide:AxelGuide}){
  return <aside className={'axel axel-'+guide.mood} aria-label="Axel, tu guía">
   <div className="axel-bubble">
    <button type="button" className="axel-close" onClick={()=>toggle(true)} aria-label="Minimizar a Axel"><X size={13}/></button>
-   <ol className="axel-steps" aria-label="Pasos">{steps.map((s:string,i:number)=><li key={s} className={(guide.done||i+1<guide.step?'is-done':i+1===guide.step?'is-now':'')} aria-current={i+1===guide.step&&!guide.done?'step':undefined}><span>{guide.done||i+1<guide.step?'✓':i+1}</span>{s}</li>)}</ol>
+   {guide.step>0&&<ol className="axel-steps" aria-label="Pasos">{steps.map((s:string,i:number)=><li key={s} className={(guide.done||i+1<guide.step?'is-done':i+1===guide.step?'is-now':'')} aria-current={i+1===guide.step&&!guide.done?'step':undefined}><span>{guide.done||i+1<guide.step?'✓':i+1}</span>{s}</li>)}</ol>}
    <div role="status" aria-live="polite"><b>{guide.title}</b><p>{guide.text}</p>{guide.detail&&<small>Detalle: {guide.detail}</small>}</div>
   </div>
   <div className="axel-avatar" key={guide.mood+guide.title}>{avatar}</div>

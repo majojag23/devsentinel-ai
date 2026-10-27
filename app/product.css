@@ -46,3 +46,12 @@
 .sec-note{margin:0;color:#8c9e82;font-size:12px;line-height:1.45}
 .agent-check{display:grid;gap:3px;margin-top:10px;padding:10px 12px;border:1px solid rgba(194,237,138,.3);border-radius:10px;background:#101a13;font-size:12.5px;color:#cfe0c3}
 .agent-check.is-bad{border-color:rgba(242,199,110,.65)}.agent-check b{color:#e6f1dc}.agent-check p{margin:0;line-height:1.45}.agent-check.is-bad p{color:#f2d58f}.agent-check small{margin-top:4px;color:#8c9e82;font-size:11.5px}
+.severity.low{color:#9cd5b6}.severity.low>span{background:#7fc29d}
+.status.st-proposed{background:#393321;color:#d4bd7d;border-color:#594d2d}.status.st-published{background:#1e382b;color:#9cd5b6;border-color:#31543f}.status.st-no-fix{background:#2a2f2b;color:#aab5aa;border-color:#3d453e}.status.st-reviewed{background:#25313c;color:#a8c2da;border-color:#364b5e}
+.landing{display:grid;gap:34px;align-content:start;padding-bottom:260px}.landing-hero{display:grid;gap:14px;max-width:720px;margin:18px 0 0}.landing-hero h1{margin:0;font-size:clamp(40px,7vw,68px);line-height:1.02;color:#eaf3e2}.landing-hero h1 span{color:#c2ed8a}.landing-hero p{margin:0;color:#a9b8a0;font-size:16px;line-height:1.55;max-width:560px}
+.landing .hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px}.landing-note{padding:10px 12px;border:1px solid rgba(242,199,110,.5);border-radius:10px;background:#1d1a10;color:#f2d58f!important;font-size:13px!important}
+.landing-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}.landing-cards>div{display:grid;gap:6px;align-content:start;padding:18px;border:1px solid rgba(194,237,138,.2);border-radius:14px;background:#131d17;color:#c2ed8a}.landing-cards h3{margin:4px 0 0;color:#e6f1dc;font-size:15px}.landing-cards p{margin:0;color:#98a98e;font-size:13px;line-height:1.5}
+a.primary,a.hero-secondary{display:inline-flex;align-items:center;gap:8px;text-decoration:none}
+.empty h2{margin:10px 0 6px}.empty .primary,.empty .secondary{margin-top:12px}
+.shell .main>main{padding-bottom:250px}.test-row code{overflow-wrap:anywhere;white-space:normal}
+.sec-item.is-done{opacity:.62}.sec-done{display:inline-flex;align-items:center;gap:6px;color:#c2ed8a;font-size:12px}

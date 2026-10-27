@@ -37,3 +37,10 @@ test('Axel warns when the automatic check of a proposal finds something',()=>{
  const g=axelGuide({agentSummary:true,proposalIssues:2});assert.equal(g.mood,'worried');assert.match(g.title,/Ojo con esta propuesta/);
  assert.equal(axelGuide({agentSummary:true,proposalIssues:0}).title,'Tengo una propuesta');
 });
+test('after a PR is created Axel points to the next pending finding',()=>{
+ const more=axelGuide({published:true,security:{total:5,serious:1,remaining:3}});
+ assert.equal(more.mood,'happy');assert.match(more.text,/quedan 3 hallazgos/);assert.match(more.text,/Proponer arreglo/);
+ assert.match(axelGuide({published:true,security:{total:5,serious:1,remaining:1}}).text,/queda 1 hallazgo/);
+ assert.match(axelGuide({published:true,security:{total:5,serious:1,remaining:0}}).text,/Arreglar CI/);
+ assert.match(axelGuide({published:true}).text,/Arreglar CI/);
+});
