@@ -44,3 +44,13 @@ test('after a PR is created Axel points to the next pending finding',()=>{
  assert.match(axelGuide({published:true,security:{total:5,serious:1,remaining:0}}).text,/Arreglar CI/);
  assert.match(axelGuide({published:true}).text,/Arreglar CI/);
 });
+
+import {tickleLine,tickleLines,TICKLE_MS} from '../lib/axel.mjs';
+test('tickling Axel cycles three phrases and lasts as long as the prototype',()=>{
+ assert.equal(TICKLE_MS,3400);assert.equal(tickleLines.length,3);
+ assert.equal(tickleLine(0).title,'¡Jajaja, eso hace cosquillas!');
+ assert.equal(tickleLine(1).title,'¡Otra vez nooo! 😂');
+ assert.equal(tickleLine(2).title,'¡Me rindo, me rindo!');
+ assert.equal(tickleLine(3).title,tickleLine(0).title);assert.equal(tickleLine(-1).title,tickleLine(2).title);
+ assert.ok(tickleLines.every(l=>l.title&&l.text.length>20));
+});

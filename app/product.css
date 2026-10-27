@@ -62,3 +62,15 @@ a.primary,a.hero-secondary{display:inline-flex;align-items:center;gap:8px;text-d
 .sec-bar{flex:1 1 140px;height:8px;border-radius:999px;background:#223226;overflow:hidden}.sec-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#6fcf86,#c2ed8a);transition:width .35s ease}
 .sec-filter{display:inline-flex;gap:4px}.sec-filter button{padding:4px 10px;border:1px solid rgba(194,237,138,.28);border-radius:8px;background:transparent;color:#a9bd9a;font-size:12px;cursor:pointer}.sec-filter button.on{background:#c2ed8a;border-color:#c2ed8a;color:#10170f;font-weight:600}
 .sec-actions .ghost.quiet{border-color:rgba(255,255,255,.14);color:#9aa89a}.sec-actions .ghost.quiet:hover:not(:disabled){background:rgba(255,255,255,.06)}
+
+.axel-touch{position:relative;padding:0;border:0;background:transparent;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;border-radius:30%;isolation:isolate}
+.axel-touch:focus-visible{outline:2px dashed #c2ed8a;outline-offset:6px}
+.axel-touch:hover .axel-body{filter:drop-shadow(0 0 12px rgba(194,237,138,.28))}
+.axel.tickled .axel-body{filter:drop-shadow(0 0 18px rgba(194,237,138,.4))}
+.axel.tickled .axel-bubble{border-color:#b5d98a;box-shadow:0 0 28px rgba(191,232,131,.14)}.axel.tickled .axel-bubble b{color:#dbf6bb}
+.axel-tickle-foot{display:block;margin-top:6px;color:#a5c58a;font-size:11px}
+.axel-particles{position:absolute;inset:0;pointer-events:none;z-index:4}
+.axel-particles span{position:absolute;color:#d5f5b2;font-weight:600;font-size:15px;text-shadow:0 0 15px rgba(187,239,107,.3);opacity:0}
+.axel-particles span:nth-child(1){left:-6%;top:34%;--drift:-14px}.axel-particles span:nth-child(2){right:0;top:20%;--drift:14px;font-size:19px}.axel-particles span:nth-child(3){left:6%;top:2%;--drift:-8px;font-size:12px}
+@media (prefers-reduced-motion:no-preference){.axel.tickled .axel-avatar{animation:axel-tickle .34s ease-in-out infinite}.axel-particles span{animation:axel-float 1s ease-out infinite}.axel-particles span:nth-child(2){animation-delay:.3s}.axel-particles span:nth-child(3){animation-delay:.6s}@keyframes axel-tickle{0%,100%{transform:rotate(0) translateY(0)}25%{transform:rotate(-3deg) translateY(-3px)}75%{transform:rotate(3deg) translateY(-2px)}}@keyframes axel-float{0%{opacity:0;transform:translate(0,8px) rotate(-6deg)}25%{opacity:1}100%{opacity:0;transform:translate(var(--drift),-36px) rotate(10deg)}}}
+@media (prefers-reduced-motion:reduce){.axel-particles span{opacity:1}}
