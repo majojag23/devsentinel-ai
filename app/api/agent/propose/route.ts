@@ -4,6 +4,7 @@ import {requireGitHub,requireSameOrigin,apiError} from '../../../../lib/github-a
 import {githubClient,GitHubError} from '../../../../lib/github.mjs';
 import {aiConfig,createChat} from '../../../../lib/ai.mjs';
 import {proposeFix} from '../../../../lib/agent.mjs';
+import {osvClient,verifyProposal} from '../../../../lib/security.mjs';
 import {createLimiter} from '../../../../lib/limit.mjs';
 export const runtime='nodejs';
 export const maxDuration=60;
@@ -24,6 +25,7 @@ export async function POST(request:NextRequest){
   let input:any;try{input=JSON.parse(text);}catch{throw new GitHubError('Solicitud JSON no válida.');}
   running++;acquired=true;
   const result=await proposeFix({github:githubClient(token),chat:createChat(config),repository:input.repository,base:input.base||'main',task:input.task});
+  if(result.proposal){try{(result as any).verification=await verifyProposal({path:result.proposal.path,original:result.proposal.original,content:result.proposal.content,osv:osvClient()});}catch{}}
   return Response.json(result,{headers:{'Cache-Control':'no-store'}});
  }catch(error){return apiError(error);}finally{if(acquired)running--;}
 }

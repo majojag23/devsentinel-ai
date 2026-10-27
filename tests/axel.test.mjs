@@ -26,3 +26,14 @@ test('review, success and no-fix moments tell the user what to do next',()=>{
  const done=axelGuide({published:true});assert.equal(done.mood,'happy');assert.equal(done.done,true);assert.match(done.text,/Arreglar CI/);
  assert.equal(axelGuide({agentNoFix:true}).mood,'surprised');
 });
+test('Axel reacts to a security report without ever promising the code is safe',()=>{
+ assert.equal(axelGuide({busy:'security'}).mood,'thinking');
+ const bad=axelGuide({security:{total:3,serious:1}});assert.equal(bad.mood,'worried');assert.match(bad.title,/3 cosas/);assert.match(bad.text,/graves/);
+ assert.match(axelGuide({security:{total:1,serious:0}}).title,/1 cosa por revisar/);
+ const clean=axelGuide({security:{total:0,serious:0}});assert.equal(clean.mood,'happy');assert.match(clean.text,/No es una garantía/);
+ assert.equal(axelGuide({security:{total:2,serious:0},agentSummary:true}).title,'Tengo una propuesta');
+});
+test('Axel warns when the automatic check of a proposal finds something',()=>{
+ const g=axelGuide({agentSummary:true,proposalIssues:2});assert.equal(g.mood,'worried');assert.match(g.title,/Ojo con esta propuesta/);
+ assert.equal(axelGuide({agentSummary:true,proposalIssues:0}).title,'Tengo una propuesta');
+});
