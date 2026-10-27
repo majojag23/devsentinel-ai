@@ -10,8 +10,9 @@ curl_setopt_array($ch, [CURLOPT_CUSTOMREQUEST => $method, CURLOPT_RETURNTRANSFER
   CURLOPT_TIMEOUT => 120, CURLOPT_CONNECTTIMEOUT => 10, CURLOPT_FOLLOWLOCATION => false]);
 $h = ['X-Forwarded-For: ' . ($_SERVER['REMOTE_ADDR'] ?? ''), 'X-Forwarded-Host: ' . ($_SERVER['HTTP_HOST'] ?? ''), 'X-Forwarded-Proto: https'];
 if (!empty($_SERVER['HTTP_HOST'])) $h[] = 'Host: ' . $_SERVER['HTTP_HOST'];
-foreach (['HTTP_COOKIE' => 'Cookie', 'HTTP_ORIGIN' => 'Origin', 'CONTENT_TYPE' => 'Content-Type', 'HTTP_ACCEPT' => 'Accept'] as $k => $n)
-  if (!empty($_SERVER[$k])) $h[] = "$n: " . $_SERVER[$k];
+// Reenvía los encabezados del cliente (Auth.js usa X-Auth-Return-Redirect, Origin, Cookie, Content-Type...).
+foreach (getallheaders() as $n => $v)
+  if (!preg_match('/^(host|connection|content-length|accept-encoding|x-forwarded-.*|transfer-encoding)$/i', $n)) $h[] = "$n: $v";
 if (!in_array($method, ['GET', 'HEAD'])) curl_setopt($ch, CURLOPT_POSTFIELDS, file_get_contents('php://input'));
 curl_setopt($ch, CURLOPT_HTTPHEADER, $h);
 $r = curl_exec($ch);
