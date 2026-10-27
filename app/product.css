@@ -55,3 +55,10 @@ a.primary,a.hero-secondary{display:inline-flex;align-items:center;gap:8px;text-d
 .empty h2{margin:10px 0 6px}.empty .primary,.empty .secondary{margin-top:12px}
 .shell .main>main{padding-bottom:250px}.test-row code{overflow-wrap:anywhere;white-space:normal}
 .sec-item.is-done{opacity:.62}.sec-done{display:inline-flex;align-items:center;gap:6px;color:#c2ed8a;font-size:12px}
+.sec-state{display:inline-flex;align-items:center;gap:4px;margin-left:auto;padding:2px 9px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:.04em}
+.sec-state.todo{color:#c9b98a;background:rgba(201,185,138,.12);border:1px solid rgba(201,185,138,.4)}.sec-state.wip{color:#9ec6ff;background:rgba(120,170,255,.14);border:1px solid rgba(120,170,255,.5)}.sec-state.ok{color:#10170f;background:#8fe3a0;border:1px solid #8fe3a0}
+.sec-item.is-fixed{--sev:#6fcf86;background:#14261b;border-color:rgba(143,227,160,.35)}.sec-item.is-fixed>b,.sec-item.is-fixed>p{opacity:.72}.sec-item.is-active{--sev:#7fb0ff;background:#142133}
+.sec-progress{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 12px;border:1px solid rgba(194,237,138,.2);border-radius:10px;background:#101a13;font-size:12.5px;color:#cfe0c3}
+.sec-bar{flex:1 1 140px;height:8px;border-radius:999px;background:#223226;overflow:hidden}.sec-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#6fcf86,#c2ed8a);transition:width .35s ease}
+.sec-filter{display:inline-flex;gap:4px}.sec-filter button{padding:4px 10px;border:1px solid rgba(194,237,138,.28);border-radius:8px;background:transparent;color:#a9bd9a;font-size:12px;cursor:pointer}.sec-filter button.on{background:#c2ed8a;border-color:#c2ed8a;color:#10170f;font-weight:600}
+.sec-actions .ghost.quiet{border-color:rgba(255,255,255,.14);color:#9aa89a}.sec-actions .ghost.quiet:hover:not(:disabled){background:rgba(255,255,255,.06)}
