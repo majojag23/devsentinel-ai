@@ -84,3 +84,9 @@ Antes de ofrecerlo como SaaS: GitHub App, base de datos de cuentas/instalaciones
 ## Despliegue (SiteGround)
 
 App en `~/devsentinel-ai` (Next.js en 127.0.0.1:8810) detrás de un proxy PHP (`deploy/proxy-index.php` + `deploy/htaccess`) en `devsentinel-ai.virtualelearning.co`. El servidor no puede ejecutar `next build` (límite de recursos): compilar en local y subir `.next`. Control: `bash deploy/devsentinel.sh {start|stop|restart|status|keepalive}`. Variables en `.env.local` (OAuth sin configurar = solo demo).
+
+## Agente de reparación (`/studio` → "Pídele al agente")
+
+El usuario describe el problema; el agente (solo lectura: `list_files`, `read_file`, `propose_change`) propone un cambio de un archivo como ediciones exactas buscar/reemplazar. El diff se revisa en el editor y la publicación reutiliza el flujo de PR en borrador con aprobación humana. No ejecuta código ni hace merge; los tests los valida la CI de GitHub en el PR.
+
+Modelo intercambiable por variables de entorno (cualquier endpoint compatible con OpenAI): `AI_PROVIDER` (`gemini` por defecto, `groq`, `openrouter`, `anthropic`, `custom`), `AI_API_KEY`, y opcionalmente `AI_MODEL` / `AI_BASE_URL`. Sin `AI_API_KEY` el endpoint responde 503. Límites: 6 análisis por usuario cada 10 minutos y 2 simultáneos.
