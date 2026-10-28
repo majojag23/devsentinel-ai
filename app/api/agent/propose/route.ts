@@ -4,7 +4,7 @@ import {requireUser,requireSameOrigin,apiError} from '../../../../lib/github-aut
 import {githubClient,GitHubError} from '../../../../lib/github.mjs';
 import {aiConfig,createChat} from '../../../../lib/ai.mjs';
 import {proposeFix} from '../../../../lib/agent.mjs';
-import {osvClient,verifyProposal} from '../../../../lib/security.mjs';
+import {osvClient,npmLatest,verifyProposal} from '../../../../lib/security.mjs';
 import {createLimiter} from '../../../../lib/limit.mjs';
 import {activity,record} from '../../../../lib/activity-store';
 export const runtime='nodejs';
@@ -25,8 +25,8 @@ export async function POST(request:NextRequest){
   if(text.length>20000)throw new GitHubError('Solicitud demasiado grande.',413);
   let input:any;try{input=JSON.parse(text);}catch{throw new GitHubError('Solicitud JSON no válida.');}
   running++;acquired=true;
-  const result:any=await proposeFix({github:githubClient(token),chat:createChat(config),repository:input.repository,base:input.base||'main',task:input.task});
-  if(result.proposal){try{result.verification=await verifyProposal({path:result.proposal.path,original:result.proposal.original,content:result.proposal.content,osv:osvClient()});}catch{}}
+  const result:any=await proposeFix({github:githubClient(token),chat:createChat(config),repository:input.repository,base:input.base||'main',task:input.task,verify:(p:any)=>verifyProposal({path:p.path,original:p.original,content:p.content,osv:osvClient(),latest:npmLatest()})});
+  if(result.proposal&&!result.verification){try{result.verification=await verifyProposal({path:result.proposal.path,original:result.proposal.original,content:result.proposal.content,osv:osvClient(),latest:npmLatest()});}catch{}}
   const source=['ci','security'].includes(input.source)?input.source:'manual';
   const v=result.verification,issues=v?v.findings.length+v.deps.filter((d:any)=>d.ids.length).length+(v.reminders?.length||0):0;
   const event:any=await record(()=>activity.add(login,result.proposal

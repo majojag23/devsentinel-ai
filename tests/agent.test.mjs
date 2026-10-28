@@ -116,3 +116,47 @@ test('a hallucinated exec tool call is answered with what the agent can do, then
  const r=await proposeFix({github:github(),chat:wrapped,...base});
  assert.ok(r.proposal);assert.ok(seen.some(c=>/No puedes ejecutar comandos/.test(c||'')));
 });
+
+import {requestBody} from '../lib/ai.mjs';
+test('Claude requests carry a token cap and no temperature; other providers keep temperature 0.1',()=>{
+ const claude=requestBody({provider:'anthropic',model:'claude-haiku-5-5'},[{role:'user',content:'x'}],[]);
+ assert.equal(claude.max_tokens,4096);assert.ok(!('temperature' in claude));assert.equal(claude.tool_choice,'auto');
+ const groq=requestBody({provider:'groq',model:'openai/gpt-oss-120b'},[],[]);
+ assert.equal(groq.temperature,0.1);assert.ok(!('max_tokens' in groq));
+ assert.equal(aiConfig({AI_API_KEY:'k',AI_PROVIDER:'anthropic'}).model,'claude-haiku-5-5');
+});
+
+const edit=(find,replace)=>[{find,replace}];
+const propose=(summary,replace)=>call('propose_change',{path:'src/auth.ts',summary,edits:edit('u.profile.name.trim()',replace)});
+const clean={findings:[],deps:[],notes:[],reminders:[]};
+const bad=(title='eval',line=2)=>({findings:[{title,line}],deps:[],notes:[],reminders:[]});
+test('the automatic check can send a proposal back once and the second answer wins',async()=>{
+ const verify=async p=>/eval\(/.test(p.content)?bad():clean;
+ const seen=[],inner=script(call('read_file',{path:'src/auth.ts'}),propose('a','eval(u)'),propose('b',"u?.profile?.name?.trim() || 'x'"));
+ const chat=async a=>{seen.push(a.messages.at(-1));return inner(a);};
+ const r=await proposeFix({github:github(),chat,verify,...base});
+ assert.equal(r.proposal.summary,'b');assert.equal(r.retries,1);assert.deepEqual(r.verification.findings,[]);
+ assert.ok(r.events.some(e=>/Comprobación automática: eval \(línea 2\)/.test(e.text)));
+ assert.ok(seen.some(m=>m.role==='tool'&&/ORIGINAL/.test(m.content)&&/eval \(línea 2\)/.test(m.content)));
+});
+test('the retry is limited to one: a second bad proposal is returned with its findings, never looped',async()=>{
+ let calls=0;const inner=script(call('read_file',{path:'src/auth.ts'}),propose('a','eval(1)'),propose('b','eval(2)'),propose('c','eval(3)'));
+ const chat=async a=>{calls++;return inner(a);};
+ const r=await proposeFix({github:github(),chat,verify:async()=>bad(),...base});
+ assert.equal(r.proposal.summary,'b');assert.equal(r.verification.findings.length,1);assert.equal(r.retries,1);assert.equal(calls,3);
+});
+test('a failing check never blocks the proposal, and reminders alone never trigger a retry',async()=>{
+ const a=await proposeFix({github:github(),chat:script(call('read_file',{path:'src/auth.ts'}),propose('a','x')),verify:async()=>{throw new Error('osv down');},...base});
+ assert.ok(a.proposal);assert.equal(a.retries,0);assert.equal(a.verification,undefined);
+ let calls=0;const inner=script(call('read_file',{path:'src/auth.ts'}),propose('a','x'));
+ const b=await proposeFix({github:github(),chat:async x=>{calls++;return inner(x);},verify:async()=>({...clean,reminders:['Revoca la clave.']}),...base});
+ assert.ok(b.proposal);assert.equal(b.retries,0);assert.equal(calls,2);assert.deepEqual(b.verification.reminders,['Revoca la clave.']);
+});
+test('a dependency that still has advisories is sent back together with the clean version to use',async()=>{
+ const seen=[],inner=script(call('read_file',{path:'src/auth.ts'}),propose('a','one'),propose('b','two'));
+ let first=true;
+ const verify=async()=>{if(first){first=false;return {findings:[],deps:[{name:'lodash',version:'4.17.21',ids:['A','B','C'],suggest:'4.18.1'}],notes:[],reminders:[]};}return clean;};
+ const r=await proposeFix({github:github(),chat:async a=>{seen.push(a.messages.at(-1));return inner(a);},verify,...base});
+ assert.equal(r.proposal.summary,'b');
+ assert.ok(seen.some(m=>m.role==='tool'&&/lodash@4\.17\.21 tiene 3 aviso\(s\)/.test(m.content)&&/prueba con 4\.18\.1/.test(m.content)));
+});

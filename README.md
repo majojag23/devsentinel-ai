@@ -83,7 +83,7 @@ Antes de ofrecerlo como SaaS: GitHub App, base de datos de cuentas e instalacion
 
 ## Despliegue (SiteGround)
 
-App en `~/devsentinel-ai` (Next.js en 127.0.0.1:8810) detrás de un proxy PHP (`deploy/proxy-index.php` + `deploy/htaccess`) en `devsentinel-ai.virtualelearning.co`. El servidor no puede ejecutar `next build` (límite de recursos): compilar en local y subir `.next`. Control: `bash deploy/devsentinel.sh {start|stop|restart|status|keepalive}`. Variables en `.env.local` (sin OAuth no hay sesión: solo el editor de ejemplo; `DATA_DIR` opcional para el historial).
+App en `~/devsentinel-ai` (Next.js con el servidor propio `deploy/server.mjs`, que escucha en el socket de archivo `app.sock`: el hosting bloquea escuchar por TCP, así que ya no se usa un puerto) detrás de un proxy PHP (`deploy/proxy-index.php` + `deploy/htaccess`) en `devsentinel-ai.virtualelearning.co`. El servidor no puede ejecutar `next build` (límite de recursos): compilar en local y subir `.next`. Control: `bash deploy/devsentinel.sh {start|stop|restart|status|keepalive}`. Variables en `.env.local` (sin OAuth no hay sesión: solo el editor de ejemplo; `DATA_DIR` opcional para el historial).
 
 ## Agente de reparación (`/studio` → "Pídele al agente")
 

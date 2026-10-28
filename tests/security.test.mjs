@@ -142,3 +142,15 @@ test('secrets named in Spanish are found too, without flagging labels or placeho
  assert.ok(!JSON.stringify(f).includes('profesor-demo-2026'));
  assert.equal(scanPatch('app.js',patch('const claveCorrecta = clave;','const etiquetaClave = "Escribe tu clave";','const clave = process.env.CLAVE;','const contraseña = "<tu-contraseña>";','const secreto = "tu_secreto_aqui";')).length,0);
 });
+
+test('a proposal that still has advisories gets the latest clean version as a suggestion',async()=>{
+ const before='{\n  "dependencies": {\n    "lodash": "4.17.15"\n  }\n}\n',after=before.replace('4.17.15','4.17.21');
+ const osv=async deps=>deps.map(d=>d.version==='4.18.1'?[]:['GHSA-a','GHSA-b']);
+ const v=await verifyProposal({path:'package.json',original:before,content:after,osv,latest:async()=>'4.18.1'});
+ assert.equal(v.deps[0].suggest,'4.18.1');
+ assert.equal((await verifyProposal({path:'package.json',original:before,content:after,osv,latest:async()=>'4.17.21'})).deps[0].suggest,undefined);
+ assert.equal((await verifyProposal({path:'package.json',original:before,content:after,osv,latest:async()=>{throw new Error('npm down');}})).deps[0].suggest,undefined);
+ assert.equal((await verifyProposal({path:'package.json',original:before,content:after,osv})).deps[0].suggest,undefined);
+ const dirty=async deps=>deps.map(()=>['GHSA-a']);
+ assert.equal((await verifyProposal({path:'package.json',original:before,content:after,osv:dirty,latest:async()=>'9.9.9'})).deps[0].suggest,undefined);
+});
