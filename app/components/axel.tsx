@@ -11,12 +11,12 @@ const BLINK:[string,number][]=[['blink-half',60],['blink-closed',100],['blink-ha
 const reducedMotion=()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches;}catch{return false;}};
 /** Axel, the Sentinel: a guide that follows the Studio and explains each moment in plain words. Touch him and he laughs. */
 export function Axel({guide}:{guide:AxelGuide}){
- const [minimized,setMinimized]=useState(false),[override,setOverride]=useState('');
+ const [minimized,setMinimized]=useState(false),[override,setOverride]=useState(''),[seen,setSeen]=useState('');
  const [tickle,setTickle]=useState<{title:string;text:string}|null>(null),[laugh,setLaugh]=useState('laughing');
  const timer=useRef<ReturnType<typeof setTimeout>>(undefined),loop=useRef<ReturnType<typeof setInterval>>(undefined),count=useRef(0);
  const canvasRef=useRef<HTMLCanvasElement>(null),areaRef=useRef<HTMLButtonElement>(null),stackRef=useRef<HTMLSpanElement>(null);
  const tickled=tickle!==null;
- useEffect(()=>{try{setMinimized(localStorage.getItem(KEY)==='1');}catch{}},[]);
+ useEffect(()=>{try{const m=localStorage.getItem(KEY)==='1';setMinimized(m);if(m)setSeen(guide.title);}catch{}},[]);
  function stopTickle(){clearTimeout(timer.current);clearInterval(loop.current);setTickle(null);}
  function tickleNow(){
   if(!tickled)count.current=0;
@@ -49,12 +49,14 @@ export function Axel({guide}:{guide:AxelGuide}){
   })();
   return()=>{dead=true;clearTimeout(wake);setOverride('');};
  },[guide.mood,minimized,tickled]);
- function toggle(next:boolean){setMinimized(next);try{localStorage.setItem(KEY,next?'1':'0');}catch{}}
- const face=tickled?laugh:guide.mood==='neutral'&&override?override:guide.mood;
+ function toggle(next:boolean){if(next)setSeen(guide.title);setMinimized(next);try{localStorage.setItem(KEY,next?'1':'0');}catch{}}
+ // Minimised he is cheerful; when the guide has something new to say he is surprised instead.
+ const unread=minimized&&guide.title!==seen;
+ const face=minimized?(unread?'surprised':'happy'):tickled?laugh:guide.mood==='neutral'&&override?override:guide.mood;
  // His eyes follow the pointer while they are open and he is not laughing.
  useGaze({face,enabled:!tickled&&!minimized,canvas:canvasRef,area:areaRef,stack:stackRef,remountKey:guide.mood+guide.title+minimized});
  const avatar=<span className="axel-body"><span className={'axel-stack'+(override||tickled?' fast':'')} ref={stackRef}>{frames.map(f=><img key={f} data-face={f} className={'axel-face'+(f===face?' on':'')} src={`/axel/${f}.webp`} width={384} height={384} alt="" aria-hidden="true" draggable={false}/>)}<canvas ref={canvasRef} className="axel-gaze" aria-hidden="true"/></span></span>;
- if(minimized)return <button type="button" className="axel axel-min" onClick={()=>toggle(false)} aria-label="Abrir la guía de Axel" title="Axel te guía">{avatar}<span className="axel-dot"/></button>;
+ if(minimized)return <button type="button" className={'axel axel-min'+(unread?' unread':'')} onClick={()=>toggle(false)} aria-label={unread?'Abrir la guía de Axel: tiene algo nuevo que decirte':'Abrir la guía de Axel'} title={unread?'Axel tiene algo que decirte':'Axel te guía'}>{avatar}<span className="axel-dot"/></button>;
  return <aside className={'axel axel-'+guide.mood+(tickled?' tickled':'')} aria-label="Axel, tu guía">
   <div className="axel-bubble">
    <button type="button" className="axel-close" onClick={()=>toggle(true)} aria-label="Minimizar a Axel"><X size={13}/></button>
