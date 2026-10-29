@@ -40,6 +40,7 @@ Install App → tu cuenta → **Only select repositories** → elige los que qui
 | `AUTH_GITHUB_ID` | Client ID de la GitHub App |
 | `AUTH_GITHUB_SECRET` | su client secret |
 | `ALLOW_PRIVATE_REPOS` | `true` |
+| `GITHUB_APP_SLUG` | el final de la dirección de la app (`github.com/apps/<slug>`); opcional, añade el enlace de instalación a los errores 404 |
 
 Guarda: Render redespliega solo. Cierra sesión y vuelve a entrar para tener un token nuevo.
 

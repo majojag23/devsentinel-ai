@@ -11,7 +11,7 @@ export const {handlers,auth,signIn,signOut}=NextAuth({
   pages:{signIn:'/login',error:'/login'},
   providers:[
     ...(googleReady?[Google({clientId:process.env.AUTH_GOOGLE_ID,clientSecret:process.env.AUTH_GOOGLE_SECRET})]:[]),
-    ...(githubReady?[GitHub({clientId:process.env.AUTH_GITHUB_ID,clientSecret:process.env.AUTH_GITHUB_SECRET,authorization:{params:{scope:'read:user user:email public_repo'}}})]:[]),
+    ...(githubReady?[GitHub({clientId:process.env.AUTH_GITHUB_ID,clientSecret:process.env.AUTH_GITHUB_SECRET,authorization:{params:{scope:process.env.ALLOW_PRIVATE_REPOS==='true'?'read:user user:email':'read:user user:email public_repo'}}})]:[]),
   ],
   callbacks:{
     async jwt({token,account}){
