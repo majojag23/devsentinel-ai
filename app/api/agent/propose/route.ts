@@ -7,6 +7,7 @@ import {proposeFix} from '../../../../lib/agent.mjs';
 import {osvClient,npmLatest,verifyProposal} from '../../../../lib/security.mjs';
 import {createLimiter} from '../../../../lib/limit.mjs';
 import {activity,record} from '../../../../lib/activity-store';
+import {decodeBody} from '../../../../lib/wire.mjs';
 export const runtime='nodejs';
 export const maxDuration=60;
 // Per user: 6 runs / 10 min. Globally: 2 runs at once, so a free model quota is not drained.
@@ -23,7 +24,7 @@ export async function POST(request:NextRequest){
   if(running>=2)throw new GitHubError('Hay varios análisis en curso. Inténtalo en unos segundos.',429);
   const text=await request.text();
   if(text.length>20000)throw new GitHubError('Solicitud demasiado grande.',413);
-  let input:any;try{input=JSON.parse(text);}catch{throw new GitHubError('Solicitud JSON no válida.');}
+  let input:any;try{input=decodeBody(text);}catch{throw new GitHubError('Solicitud JSON no válida.');}
   running++;acquired=true;
   const result:any=await proposeFix({github:githubClient(token),chat:createChat(config),repository:input.repository,base:input.base||'main',task:input.task,verify:(p:any)=>verifyProposal({path:p.path,original:p.original,content:p.content,osv:osvClient(),latest:npmLatest()})});
   if(result.proposal&&!result.verification){try{result.verification=await verifyProposal({path:result.proposal.path,original:result.proposal.original,content:result.proposal.content,osv:osvClient(),latest:npmLatest()});}catch{}}

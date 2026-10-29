@@ -2,6 +2,7 @@ import type {NextRequest} from 'next/server';
 import {requireUser,requireSameOrigin,apiError} from '../../../../lib/github-auth';
 import {githubClient,publishProposal,GitHubError} from '../../../../lib/github.mjs';
 import {activity,record} from '../../../../lib/activity-store';
+import {decodeBody} from '../../../../lib/wire.mjs';
 export const runtime='nodejs';
 export async function POST(request:NextRequest){
  try{
@@ -9,7 +10,7 @@ export async function POST(request:NextRequest){
   const {token,login}=await requireUser(request);
   const text=await request.text();
   if(text.length>250000)throw new GitHubError('Solicitud demasiado grande.',413);
-  let input:any;try{input=JSON.parse(text);}catch{throw new GitHubError('Solicitud JSON no válida.');}
+  let input:any;try{input=decodeBody(text);}catch{throw new GitHubError('Solicitud JSON no válida.');}
   const result=await publishProposal(githubClient(token),input);
   await record(async()=>{
    const done={status:'published',url:result.url,number:result.number};
