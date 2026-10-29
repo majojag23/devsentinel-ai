@@ -14,5 +14,5 @@ if(socket&&existsSync(socket))unlinkSync(socket);
 const server=createServer((request,response)=>handle(request,response));
 server.on('error',error=>{console.error('No se pudo escuchar:',error.code,error.message);process.exit(1);});
 if(socket)server.listen(socket,()=>{chmodSync(socket,0o660);console.log('Escuchando en el socket',socket);});
-else server.listen(port,'127.0.0.1',()=>console.log('Escuchando en http://127.0.0.1:'+port));
+else{const host=process.env.HOST||'127.0.0.1';server.listen(port,host,()=>console.log('Escuchando en http://'+host+':'+port));}
 for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>server.close(()=>{if(socket)try{unlinkSync(socket);}catch{}process.exit(0);}));
